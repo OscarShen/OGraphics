@@ -23,9 +23,10 @@ const GLchar* vertexShaderSource =
 const GLchar* fragmentShaderSource =
 "#version 330 core\n"
 "out vec4 color;\n"
+"uniform vec4 ourColor;\n"
 "void main()\n"
 "{\n"
-"color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+"color = ourColor;\n"
 "}\n\0";
 
 int main()
@@ -133,6 +134,15 @@ int main()
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
+
+		// Test key word of GLSL
+		GLfloat timeValue = glfwGetTime();
+		GLfloat greenValue = (sin(timeValue) / 2) + 0.5;
+		GLfloat redValue = (cos(timeValue) / 2) + 0.5;
+		GLfloat blueValue = abs(cos(timeValue));
+		GLint vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+		glUseProgram(shaderProgram);
+		glUniform4f(vertexColorLocation, redValue, greenValue, blueValue, 1.0f);
 
 		// Sorry I don't know what is the function used for.--2016.10.01
 		// SwapBuffer between foreground and background,means that we finish my work and ready to push to screen.--2016.10.02
