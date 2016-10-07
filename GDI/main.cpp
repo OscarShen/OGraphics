@@ -47,12 +47,8 @@ LRESULT CALLBACK windowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
 //program in this function
 int gameMain() {
-	OGRect rect(OGPoint(300, 300), OGPoint(600, 600));
-	for (int i = 0; i < 100; ++i) {
-		ogDrawClipLine(hdc, rand() % WINDOW_WIDTH, rand() % WINDOW_HEIGHT, rand() % WINDOW_WIDTH, rand() % WINDOW_HEIGHT,
-			rect, RGB(rand() % 256, rand() % 256, rand() % 256));
-	}
-	Sleep(33);
+	OGPoly poly(std::vector<OGPoint*>{&OGPoint(100, 100), &OGPoint(100, 200), &OGPoint(200, 200),&OGPoint(200, 100),  },4);
+	ogFillPoly(hdc, poly, RGB(0, 255, 0));
 	return 1;
 }
 

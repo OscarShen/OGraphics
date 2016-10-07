@@ -27,10 +27,10 @@ struct OGCircle {
 
 //¶à±ßÐÎ
 typedef struct OGPolygon {
-	std::vector<OGPoint> points;
+	std::vector<OGPoint*> points;
 	int n;
-	OGPolygon(std::vector<OGPoint>& points, int n) :points(points), n(n) {}
-	bool isvalid();
+	OGPolygon(std::vector<OGPoint*>& points, int n) :points(points), n(n) {}
+	bool isValid();
 }OGPoly;
 
 //Ïß¶Î
@@ -72,4 +72,6 @@ bool isLineSegmentIntersect(const OGLineSeg& ls1, const OGLineSeg& ls2);
 bool isRectOfLineIntersect(const OGLineSeg& ls1, const OGLineSeg& ls2);
 
 bool isPointInPolygon(const OGPoly& OGPoly, const OGPoint& p);
+
+void getPolygonMinMax(OGPoly poly, int& ymin, int& ymax);
 #endif // !OGUtils_h_

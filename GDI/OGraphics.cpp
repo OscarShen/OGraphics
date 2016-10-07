@@ -3,6 +3,7 @@
 #include <vector>
 #include <list>
 #include <iostream>
+#include <functional>
 #include "OGraphics.h"
 
 void ogDrawLine(HDC hdc, int x1, int y1, int x2, int y2, COLORREF color)
@@ -74,12 +75,12 @@ int ogClipLine(int &x1, int &y1, int &x2, int &y2, OGRect &rect)
 	int p1_code = 0,p2_code = 0;
 	int min_y, min_x, max_y, max_x;
 	if (rect.p1.x < rect.p2.x) {
-		min_x = rect.p1.x;
-		max_x = rect.p2.x;
+		min_x = (int)rect.p1.x;
+		max_x = (int)rect.p2.x;
 	}
 	if (rect.p1.y < rect.p2.y) {
-		min_y = rect.p1.y;
-		max_y = rect.p2.y;
+		min_y = (int)rect.p1.y;
+		max_y = (int)rect.p2.y;
 	}
 
 	if (y1 < min_y)
@@ -117,50 +118,50 @@ int ogClipLine(int &x1, int &y1, int &x2, int &y2, OGRect &rect)
 		break;
 	case CLIP_N:
 		cy1 = min_y;
-		cx1 = x1 + 0.5 + (min_y - y1)*(x2 - x1) / (y2 - y1);
+		cx1 = (int)(x1 + 0.5 + (min_y - y1)*(x2 - x1) / (y2 - y1));
 		break;
 	case CLIP_S:
 		cy1 = max_y;
-		cx1 = x1 + 0.5 + (max_y - y1)*(x2 - x1) / (y2 - y1);
+		cx1 = (int)(x1 + 0.5 + (max_y - y1)*(x2 - x1) / (y2 - y1));
 		break;
 	case CLIP_W:
 		cx1 = min_x;
-		cy1 = y1 + 0.5 + (min_x - x1)*(y2 - y1) / (x2 - x1);
+		cy1 = (int)(y1 + 0.5 + (min_x - x1)*(y2 - y1) / (x2 - x1));
 		break;
 	case CLIP_E:
 		cx1 = max_x;
-		cy1 = y1 + 0.5 + (max_x - x1)*(y2 - y1) / (x2 - x1);
+		cy1 = (int)(y1 + 0.5 + (max_x - x1)*(y2 - y1) / (x2 - x1));
 		break;
 	case CLIP_NE:
 		cy1 = min_y;
-		cx1 = x1 + 0.5 + (min_y - y1)*(x2 - x1) / (y2 - y1);
+		cx1 = (int)(x1 + 0.5 + (min_y - y1)*(x2 - x1) / (y2 - y1));
 		if (cx1<min_x || cx1>max_x) {
 			cx1 = max_x;
-			cy1 = y1 + 0.5 + (max_x - x1)*(y2 - y1) / (x2 - x1);
+			cy1 = (int)(y1 + 0.5 + (max_x - x1)*(y2 - y1) / (x2 - x1));
 		}//also maybe not have intersection with rectangle
 		break;
 	case CLIP_SE:
 		cy1 = max_y;
-		cx1 = x1 + 0.5 + (max_y - y1)*(x2 - x1) / (y2 - y1);
+		cx1 = (int)(x1 + 0.5 + (max_y - y1)*(x2 - x1) / (y2 - y1));
 		if (cx1<min_x || cx1>max_x) {
 			cx1 = max_x;
-			cy1 = y1 + 0.5 + (max_x - x1)*(y2 - y1) / (x2 - x1);
+			cy1 = (int)(y1 + 0.5 + (max_x - x1)*(y2 - y1) / (x2 - x1));
 		}//also maybe not have intersection with rectangle
 		break;
 	case CLIP_NW:
 		cy1 = min_y;
-		cx1 = x1 + 0.5 + (min_y - y1)*(x2 - x1) / (y2 - y1);
+		cx1 = (int)(x1 + 0.5 + (min_y - y1)*(x2 - x1) / (y2 - y1));
 		if (cx1<min_x || cx1>max_x) {
 			cx1 = min_x;
-			cy1 = y1 + 0.5 + (min_x - x1)*(y2 - y1) / (x2 - x1);
+			cy1 = (int)(y1 + 0.5 + (min_x - x1)*(y2 - y1) / (x2 - x1));
 		}//also maybe not have intersection with rectangle
 		break;
 	case CLIP_SW:
 		cy1 = max_y;
-		cx1 = x1 + 0.5 + (max_y - y1)*(x2 - x1) / (y2 - y1);
+		cx1 = (int)(x1 + 0.5 + (max_y - y1)*(x2 - x1) / (y2 - y1));
 		if (cx1<min_x || cx1>max_x) {
 			cx1 = max_x;
-			cy1 = y1 + 0.5 + (min_x - x1)*(y2 - y1) / (x2 - x1);
+			cy1 = (int)(y1 + 0.5 + (min_x - x1)*(y2 - y1) / (x2 - x1));
 		}//also maybe not have intersection with rectangle
 		break;
 	default:break;
@@ -171,50 +172,50 @@ int ogClipLine(int &x1, int &y1, int &x2, int &y2, OGRect &rect)
 		break;
 	case CLIP_N:
 		cy2 = min_y;
-		cx2 = x2 + 0.5 + (min_y - y2)*(x2 - x1) / (y2 - y1);
+		cx2 = (int)(x2 + 0.5 + (min_y - y2)*(x2 - x1) / (y2 - y1));
 		break;
 	case CLIP_S:
 		cy2 = max_y;
-		cx2 = x2 + 0.5 + (max_y - y2)*(x2 - x1) / (y2 - y1);
+		cx2 = (int)(x2 + 0.5 + (max_y - y2)*(x2 - x1) / (y2 - y1));
 		break;
 	case CLIP_W:
 		cx2 = min_x;
-		cy2 = y2 + 0.5 + (min_x - x2)*(y2 - y1) / (x2 - x1);
+		cy2 = (int)(y2 + 0.5 + (min_x - x2)*(y2 - y1) / (x2 - x1));
 		break;
 	case CLIP_E:
 		cx2 = max_x;
-		cy2 = y2 + 0.5 + (max_x - x2)*(y2 - y1) / (x2 - x1);
+		cy2 = (int)(y2 + 0.5 + (max_x - x2)*(y2 - y1) / (x2 - x1));
 		break;
 	case CLIP_NE:
 		cy2 = min_y;
-		cx2 = x2 + 0.5 + (min_y - y2)*(x2 - x1) / (y2 - y1);
+		cx2 = (int)(x2 + 0.5 + (min_y - y2)*(x2 - x1) / (y2 - y1));
 		if (cx2<min_x || cx2>max_x) {
 			cx2 = max_x;
-			cy2 = y2 + 0.5 + (max_x - x2)*(y2 - y1) / (x2 - x1);
+			cy2 = (int)(y2 + 0.5 + (max_x - x2)*(y2 - y1) / (x2 - x1));
 		}//also maybe not have intersection with rectangle
 		break;
 	case CLIP_SE:
 		cy2 = max_y;
-		cx2 = x2 + 0.5 + (max_y - y2)*(x2 - x1) / (y2 - y1);
+		cx2 = (int)(x2 + 0.5 + (max_y - y2)*(x2 - x1) / (y2 - y1));
 		if (cx2<min_x || cx2>max_x) {
 			cx2 = max_x;
-			cy2 = y2 + 0.5 + (max_x - x2)*(y2 - y1) / (x2 - x1);
+			cy2 = (int)(y2 + 0.5 + (max_x - x2)*(y2 - y1) / (x2 - x1));
 		}//also maybe not have intersection with rectangle
 		break;
 	case CLIP_NW:
 		cy2 = min_y;
-		cx2 = x2 + 0.5 + (min_y - y2)*(x2 - x1) / (y2 - y1);
+		cx2 = (int)(x2 + 0.5 + (min_y - y2)*(x2 - x1) / (y2 - y1));
 		if (cx2<min_x || cx2>max_x) {
 			cx2 = min_x;
-			cy2 = y2 + 0.5 + (min_x - x2)*(y2 - y1) / (x2 - x1);
+			cy2 = (int)(y2 + 0.5 + (min_x - x2)*(y2 - y1) / (x2 - x1));
 		}//also maybe not have intersection with rectangle
 		break;
 	case CLIP_SW:
 		cy2 = max_y;
-		cx2 = x2 + 0.5 + (max_y - y2)*(x2 - x1) / (y2 - y1);
+		cx2 = (int)(x2 + 0.5 + (max_y - y2)*(x2 - x1) / (y2 - y1));
 		if (cx2<min_x || cx2>max_x) {
 			cx2 = max_x;
-			cy2 = y2 + 0.5 + (min_x - x2)*(y2 - y1) / (x2 - x1);
+			cy2 = (int)(y2 + 0.5 + (min_x - x2)*(y2 - y1) / (x2 - x1));
 		}//also maybe not have intersection with rectangle
 		break;
 	default:break;
@@ -232,3 +233,136 @@ int ogClipLine(int &x1, int &y1, int &x2, int &y2, OGRect &rect)
 	y2 = cy2;
 	return 1;
 }
+
+int ogDrawEllipse(HDC hdc, int x, int y, int a, int b)
+{
+
+	return 0;
+}
+
+int ogDrawCircle(HDC hdc, int x, int y, int r) { return ogDrawEllipse(hdc, x, y, r, r); }
+
+typedef struct tagEDGE
+{
+	double xi;
+	double dx;
+	int ymax;
+}EDGE;
+
+void initScanLineNewEdgeTable(HDC hdc, std::vector<std::list<EDGE>>& slNet, OGPoly& py, 
+	int& ymin, int& ymax, COLORREF color = RGB(255, 255, 255)) {
+	EDGE e;
+	int n = py.points.size();
+	for (int i = 0; i < n; i++)
+	{
+		const OGPoint& ps = *(py.points[i]);
+		const OGPoint& pe = *(py.points[(i + 1) % n]);
+		const OGPoint& pss = *(py.points[(i - 1 + n) % n]);
+		const OGPoint& pee = *(py.points[(i + 2) % n]);
+		if (pe.y != ps.y) //不处理水平线
+		{
+			e.dx = double(pe.x - ps.x) / double(pe.y - ps.y);
+			if (pe.y > ps.y)
+			{
+				e.xi = ps.x;
+				if (pee.y >= pe.y)
+					e.ymax = pe.y - 1;
+				else
+					e.ymax = pe.y;
+				slNet[ps.y - ymin].push_front(e);
+			}
+			else
+			{
+				e.xi = pe.x;
+				if (pss.y >= ps.y)
+					e.ymax = ps.y - 1;
+				else
+					e.ymax = ps.y;
+				slNet[pe.y - ymin].push_front(e);
+			}
+		}
+		else {
+			if (pss.y < ps.y)
+				ogDrawLine(hdc, ps.x, ps.y, pe.x, pe.y, color);
+		}
+	}
+}
+
+bool IsEdgeOutOfActive(EDGE e, int y)
+{
+	return (e.ymax == y);
+}
+void RemoveNonActiveEdgeFromAet(std::list<EDGE>& aet, int y)
+{
+	aet.remove_if(std::bind2nd(std::ptr_fun(IsEdgeOutOfActive), y));
+}
+
+void UpdateAetEdgeInfo(EDGE& e)
+{
+	e.xi += e.dx;
+}
+
+void UpdateAndResortAet(std::list<EDGE>& aet)
+{
+	//更新xi
+	for (auto& a : aet)
+		UpdateAetEdgeInfo(a);
+	//根据xi从小到大重新排序
+}
+
+void InsertNetListToAet(std::list<EDGE>& net, std::list<EDGE>& aet) {
+	for (auto it1 = net.begin(); it1 != net.end(); ++it1)
+	{
+		aet.push_back(*it1);
+	}
+}
+
+void FillAetScanLine(HDC hdc, std::list<EDGE> aet, int y, COLORREF color = RGB(255, 255, 255)) {
+	bool flag;
+	flag = true;
+	auto it = aet.begin();
+	auto it1 = it;
+	for (; it != aet.end(); it++)
+	{
+		it1 = it;
+		it1++;
+		if (it1 == aet.end())
+		{
+			break;
+		}
+		if (flag)
+		{
+			ogDrawLine(hdc, it->xi, y, it1->xi, y, color);
+		}
+		flag = !flag;
+	}
+
+}
+
+
+void processScanLineFill(HDC hdc, std::vector< std::list<EDGE>>& slNet, int ymin, int ymax, COLORREF color = RGB(255, 255, 255)) {
+	std::list<EDGE> aet;
+
+	for (int y = ymin; y <= ymax; y++)
+	{
+		InsertNetListToAet(slNet[y - ymin], aet);
+		FillAetScanLine(hdc, aet, y, color);
+		//删除非活动边
+		RemoveNonActiveEdgeFromAet(aet, y);
+		//更新活动边表中每项的xi值，并根据xi重新排序
+		UpdateAndResortAet(aet);
+	}
+}
+
+int ogFillPoly(HDC hdc, OGPoly py, COLORREF color) {
+	if (!py.isValid())
+		return -1;
+	int ymin = 0;
+	int ymax = 0;
+	getPolygonMinMax(py, ymin, ymax);
+	std::vector< std::list<EDGE> > slNet(ymax - ymin + 1);
+	initScanLineNewEdgeTable(hdc, slNet, py, ymin, ymax, color);
+	processScanLineFill(hdc, slNet, ymin, ymax, color);
+	return 1;
+}
+

@@ -100,3 +100,21 @@ bool isPointInPolygon(const OGPoly & poly, const OGPoint & p)
 
 	return false;
 }
+
+void getPolygonMinMax(OGPoly poly, int & ymin, int & ymax)
+{
+	auto* p = &(poly.points);
+	int n = p->size();
+	ymax = ymin = (*p)[0]->y;
+	for (int i = 1; i < n; ++i) {
+		if ((*p)[i]->y > ymax)
+			ymax = (*p)[i]->y;
+		if ((*p)[i]->y < ymin)
+			ymin = (*p)[i]->y;
+	}
+}
+
+bool OGPolygon::isValid()
+{
+	return points.size() >= 3;
+}
