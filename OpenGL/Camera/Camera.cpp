@@ -27,6 +27,9 @@ glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 bool keys[2014];
+// Speed
+GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
+GLfloat lastFrame = 0.0f;  	// Time of last frame
 
 int main() {
 	glfwInit();
@@ -173,6 +176,12 @@ int main() {
 	{
 		// Supervisor activities from user
 		glfwPollEvents();
+		// To make sure
+		GLfloat currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+		do_movement();
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -248,7 +257,7 @@ int main() {
 }
 
 void do_movement() {
-	GLfloat cameraSpeed = 0.05f;
+	GLfloat cameraSpeed = deltaTime * 10;
 	if (keys[GLFW_KEY_W])
 		cameraPos += cameraSpeed * cameraFront;
 	if (keys[GLFW_KEY_S])
@@ -282,5 +291,4 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		else if (action == GLFW_RELEASE)
 			keys[key] = false;
 	}
-	do_movement();
 }

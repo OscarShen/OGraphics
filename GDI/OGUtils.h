@@ -28,8 +28,7 @@ struct OGCircle {
 //¶à±ßÐÎ
 typedef struct OGPolygon {
 	std::vector<OGPoint*> points;
-	int n;
-	OGPolygon(std::vector<OGPoint*>& points, int n) :points(points), n(n) {}
+	OGPolygon(std::vector<OGPoint*>& points) :points(points){}
 	bool isValid();
 }OGPoly;
 

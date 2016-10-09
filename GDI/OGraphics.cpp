@@ -3,6 +3,7 @@
 #include <vector>
 #include <list>
 #include <iostream>
+#include <stack>
 #include <functional>
 #include "OGraphics.h"
 
@@ -234,13 +235,78 @@ int ogClipLine(int &x1, int &y1, int &x2, int &y2, OGRect &rect)
 	return 1;
 }
 
-int ogDrawEllipse(HDC hdc, int x, int y, int a, int b)
+int ogDrawEllipse(HDC hdc, OGPoint& p, int a, int b, COLORREF color)
 {
+	int aa = a*a, bb = b*b, twoaa = 2 * aa, twobb = 2 * bb;
+	int x = 0, y = b;
+	int d;
+	int dx = 0, dy = twoaa*y;
+	d = (int)(bb + aa*(-b + 0.25) + 0.5);
+	SetPixel(hdc, p.x + x, p.y + y, color);
+	SetPixel(hdc, p.x - x, p.y + y, color);
+	SetPixel(hdc, p.x + x, p.y - y, color);
+	SetPixel(hdc, p.x - x, p.y - y, color);
+	while (dx < dy) {
+		++x;
+		dx += twobb;
+		if (d < 0)
+			d += bb + dx;
+		else {
+			dy -= twoaa;
+			d += bb + dx - dy;
+			--y;
+		}
+		SetPixel(hdc, p.x + x, p.y + y, color);
+		SetPixel(hdc, p.x - x, p.y + y, color);
+		SetPixel(hdc, p.x + x, p.y - y, color);
+		SetPixel(hdc, p.x - x, p.y - y, color);
+	}
 
-	return 0;
+	d = (int)(bb*(x + 0.5)*(x + 0.5) + aa*(y - 1)*(y - 1) - aa*bb + 0.5);
+	while (y > 0) {
+		--y;
+		dy -= twoaa;
+		if (d > 0)
+			d += aa - dy;
+		else {
+			++x;
+			dx += twobb;
+			d += aa - dy + dx;
+		}
+		SetPixel(hdc, p.x + x, p.y + y, color);
+		SetPixel(hdc, p.x - x, p.y + y, color);
+		SetPixel(hdc, p.x + x, p.y - y, color);
+		SetPixel(hdc, p.x - x, p.y - y, color);
+	}
+	return 1;
 }
 
-int ogDrawCircle(HDC hdc, int x, int y, int r) { return ogDrawEllipse(hdc, x, y, r, r); }
+void ogCirclePoints(HDC hdc, OGPoint& p, int x, int y, COLORREF color) {
+	SetPixel(hdc, x + p.x, y + p.y, color);
+	SetPixel(hdc, y + p.x, x + p.y, color);
+	SetPixel(hdc, -x + p.x, y + p.y, color);
+	SetPixel(hdc, y + p.x, -x + p.y, color);
+	SetPixel(hdc, x + p.x, -y + p.y, color);
+	SetPixel(hdc, -y + p.x, x + p.y, color);
+	SetPixel(hdc, -x + p.x, -y + p.y, color);
+	SetPixel(hdc, -y + p.x, -x + p.y, color);
+}
+
+int ogDrawCircle(HDC hdc, OGPoint& p, int r, COLORREF color) {
+	int x = 0, y = r, e = 1 - r;
+	ogCirclePoints(hdc, p, x, y, color);
+	while (x <= y) {
+		if (e < 0)
+			e += 2 * x + 3;
+		else {
+			e += 2 * (x - y) + 5;
+			--y;
+		}
+		++x;
+		ogCirclePoints(hdc, p, x, y, color);
+	}
+	return 1;
+}
 
 typedef struct tagEDGE
 {
@@ -259,7 +325,7 @@ void initScanLineNewEdgeTable(HDC hdc, std::vector<std::list<EDGE>>& slNet, OGPo
 		const OGPoint& pe = *(py.points[(i + 1) % n]);
 		const OGPoint& pss = *(py.points[(i - 1 + n) % n]);
 		const OGPoint& pee = *(py.points[(i + 2) % n]);
-		if (pe.y != ps.y) //不处理水平线
+		if (pe.y != ps.y)
 		{
 			e.dx = double(pe.x - ps.x) / double(pe.y - ps.y);
 			if (pe.y > ps.y)
@@ -304,10 +370,8 @@ void UpdateAetEdgeInfo(EDGE& e)
 
 void UpdateAndResortAet(std::list<EDGE>& aet)
 {
-	//更新xi
 	for (auto& a : aet)
 		UpdateAetEdgeInfo(a);
-	//根据xi从小到大重新排序
 }
 
 void InsertNetListToAet(std::list<EDGE>& net, std::list<EDGE>& aet) {
@@ -363,6 +427,9 @@ int ogFillPoly(HDC hdc, OGPoly py, COLORREF color) {
 	std::vector< std::list<EDGE> > slNet(ymax - ymin + 1);
 	initScanLineNewEdgeTable(hdc, slNet, py, ymin, ymax, color);
 	processScanLineFill(hdc, slNet, ymin, ymax, color);
+	for (auto l : slNet)
+		l.clear();
+	slNet.clear();
 	return 1;
 }
 

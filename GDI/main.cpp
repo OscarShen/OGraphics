@@ -4,6 +4,7 @@
 #include <Windowsx.h>
 #include <stdlib.h>
 #include "OGraphics.h"
+#include <iostream>
 #include "OGUtils.h"
 
 #define WINDOW_CLASS_NAME "WINCLASS1"
@@ -47,8 +48,10 @@ LRESULT CALLBACK windowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
 //program in this function
 int gameMain() {
-	OGPoly poly(std::vector<OGPoint*>{&OGPoint(100, 100), &OGPoint(100, 200), &OGPoint(200, 200),&OGPoint(200, 100),  },4);
+	OGPoly poly(std::vector<OGPoint*>{&OGPoint(100, 100), &OGPoint(200, 200), &OGPoint(100, 200), &OGPoint(400, 150), &OGPoint(200, 100) });
 	ogFillPoly(hdc, poly, RGB(0, 255, 0));
+	ogDrawCircle(hdc, OGPoint(500, 500), 50, RGB(255, 0, 0));
+	ogDrawEllipse(hdc, OGPoint(800, 100), 100, 50, RGB(0, 0, 255));
 	return 1;
 }
 
@@ -77,22 +80,33 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdline
 		return 0;
 
 	main_window_handle = hwnd;
+
+	hdc = GetDC(hwnd);
+
+
+	// game main function
+	gameMain();
+	// end game main function
+	ReleaseDC(hwnd, hdc);
+
 	while (true) {
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 			if (msg.message == WM_QUIT)
 				break;
+			//hdc = GetDC(hwnd);
+
+			// game main function
+			// gameMain();
+			// end game main function
+			// ReleaseDC(hwnd, hdc);
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		hdc = GetDC(hwnd);
-		
-		// game main function
-		gameMain();
-		// end game main function
-		ReleaseDC(hwnd, hdc);
+
 
 		if (KEYDOWN(VK_ESCAPE))
 			SendMessage(hwnd, WM_CLOSE, 0, 0);
+
 	}
 	return msg.wParam;
 }
