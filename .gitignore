@@ -1,0 +1,4 @@
+*.vcxproj
+*.filters
+GDI/Debug
+OpenGL/Debug

@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 
 // GLM
 #include <glm\glm.hpp>
@@ -17,6 +17,7 @@
 
 // Function prototys //////////////////////
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+void mouse_callback(GLFWwindow* window, double xPos, double yPos);
 void do_movement();
 
 // GLOBAL ///////////////////////
@@ -30,6 +31,12 @@ bool keys[2014];
 // Speed
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
 GLfloat lastFrame = 0.0f;  	// Time of last frame
+// Mouse Control
+GLfloat pitch = 0.0f;
+GLfloat yaw = -90.0f;
+GLfloat lastX = WIDTH / 2;
+GLfloat lastY = WIDTH / 2;
+GLfloat fov = 45.0f;
 
 int main() {
 	glfwInit();
@@ -41,12 +48,14 @@ int main() {
 	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "ILoveOpenGL", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 	glfwSetKeyCallback(window, key_callback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouse_callback);
 	glewExperimental = GL_TRUE;
 	glewInit();
 
 	glViewport(0, 0, WIDTH, HEIGHT);
 
-	Shader shader("resource/matrix.vs", "resource/matrix.frag");
+	Shader shader("camera/resource/matrix.vs", "camera/resource/matrix.frag");
 	// Cube
 	GLfloat vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -146,7 +155,7 @@ int main() {
 
 	// Load image, create texture and generate mipmaps
 	int width, height;
-	unsigned char* image = SOIL_load_image("resource/container.jpg", &width, &height, 0, SOIL_LOAD_RGB);
+	unsigned char* image = SOIL_load_image("camera/resource/container.jpg", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
@@ -164,7 +173,7 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// Load, create texture and generate mipmaps
-	image = SOIL_load_image("resource/awesomeface.png", &width, &height, 0, SOIL_LOAD_RGB);
+	image = SOIL_load_image("camera/resource/awesomeface.png", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
@@ -218,7 +227,7 @@ int main() {
 
 		// Profection
 		glm::mat4 projection;
-		projection = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
+		projection = glm::perspective(fov, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
 
 		GLuint modelLoc = glGetUniformLocation(shader.program, "model");
 		glUniformMatrix4fv(glGetUniformLocation(shader.program, "view"), 1, GL_FALSE, glm::value_ptr(view));
@@ -268,12 +277,12 @@ void do_movement() {
 	if (keys[GLFW_KEY_D])
 		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 	if (keys[GLFW_KEY_UP]) {
-		mixValue += 0.1f;
+		mixValue += 0.002f;
 		if (mixValue > 1.0f)
 			mixValue = 1.0f;
 	}
 	if (keys[GLFW_KEY_DOWN]) {
-		mixValue -= 0.1f;
+		mixValue -= 0.002f;
 		if (mixValue < 0)
 			mixValue = 0;
 	}
@@ -291,4 +300,37 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		else if (action == GLFW_RELEASE)
 			keys[key] = false;
 	}
+}
+
+bool firstMouse = true;
+void mouse_callback(GLFWwindow * window, double xPos, double yPos)
+{
+	if (firstMouse) {
+		lastX = xPos;
+		lastY = yPos;
+		firstMouse = false;
+	}
+
+	GLfloat xOffSet = xPos - lastX;
+	GLfloat yOffSet = lastY - yPos;  //Reversed since y - coordinates range from bottom to up
+	lastX = xPos;
+	lastY = yPos;
+
+	GLfloat sensitivity = 0.05f;
+	xOffSet *= sensitivity;
+	yOffSet *= sensitivity;
+
+	yaw += xOffSet;
+	pitch += yOffSet;
+
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(yaw))*cos(glm::radians(pitch));
+	front.y = sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw))*cos(glm::radians(pitch));
+	cameraFront = glm::normalize(front);
 }
