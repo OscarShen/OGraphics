@@ -14,6 +14,8 @@
 
 // Shader class
 #include "../Shader/Shader.h"
+// Camera class
+#include "Camera.h"
 
 // Function prototys //////////////////////
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
@@ -24,20 +26,15 @@ void do_movement();
 // GLOBAL ///////////////////////
 const GLuint WIDTH = 800, HEIGHT = 600;
 GLfloat mixValue = 0.2f;
-// Camera
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+Camera camera;
 bool keys[2014];
 // Speed
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
 GLfloat lastFrame = 0.0f;  	// Time of last frame
-// Mouse Control
-GLfloat pitch = 0.0f;
-GLfloat yaw = -90.0f;
+							// Mouse Control
 GLfloat lastX = WIDTH / 2;
 GLfloat lastY = WIDTH / 2;
-GLfloat fov = 45.0f;
 
 int main() {
 	glfwInit();
@@ -223,16 +220,14 @@ int main() {
 		GLfloat radius = 10.0f;
 		GLfloat camX = sin(glfwGetTime()) * radius;
 		GLfloat camZ = cos(glfwGetTime()) * radius;
-		glm::mat4 view;
-		view = glm::lookAt(cameraPos, cameraFront + cameraPos, cameraUp);
 
 
 		// Profection
 		glm::mat4 projection;
-		projection = glm::perspective(fov, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
+		projection = glm::perspective(camera.zoom, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
 
 		GLuint modelLoc = glGetUniformLocation(shader.program, "model");
-		glUniformMatrix4fv(glGetUniformLocation(shader.program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(shader.program, "view"), 1, GL_FALSE, glm::value_ptr(camera.getViewMatrix()));
 		glUniformMatrix4fv(glGetUniformLocation(shader.program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
 		//glUseProgram(shaderProgram);
@@ -268,16 +263,14 @@ int main() {
 }
 
 void do_movement() {
-	GLfloat cameraSpeed = deltaTime * 10;
 	if (keys[GLFW_KEY_W])
-		cameraPos += cameraSpeed * cameraFront;
+		camera.key(FORWARD, deltaTime);
 	if (keys[GLFW_KEY_S])
-		cameraPos -= cameraSpeed * cameraFront;
+		camera.key(BACKWARD, deltaTime);
 	if (keys[GLFW_KEY_A])
-		// Normalize to keep moving in a same speed
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		camera.key(LEFT, deltaTime);
 	if (keys[GLFW_KEY_D])
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		camera.key(RIGHT, deltaTime);
 	if (keys[GLFW_KEY_UP]) {
 		mixValue += 0.002f;
 		if (mixValue > 1.0f)
@@ -318,32 +311,10 @@ void mouse_callback(GLFWwindow * window, double xPos, double yPos)
 	lastX = xPos;
 	lastY = yPos;
 
-	GLfloat sensitivity = 0.05f;
-	xOffSet *= sensitivity;
-	yOffSet *= sensitivity;
-
-	yaw += xOffSet;
-	pitch += yOffSet;
-
-	if (pitch > 89.0f)
-		pitch = 89.0f;
-	if (pitch < -89.0f)
-		pitch = -89.0f;
-
-	glm::vec3 front;
-	front.x = cos(glm::radians(yaw))*cos(glm::radians(pitch));
-	front.y = sin(glm::radians(pitch));
-	front.z = sin(glm::radians(yaw))*cos(glm::radians(pitch));
-	cameraFront = glm::normalize(front);
+	camera.mouse(xOffSet, yOffSet);
 }
 
 void scroll_callback(GLFWwindow * window, double xOffset, double yOffset)
 {
-	if (fov >= 1.0f&&fov <= 45.0f) {
-		fov -= yOffset;
-	}
-	if (fov < 1.0f)
-		fov = 1.0f;
-	if (fov > 45.0f)
-		fov = 45.0f;
+	camera.scroll(xOffset, yOffset);
 }
