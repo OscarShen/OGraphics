@@ -188,7 +188,7 @@ int main() {
 		// Supervisor activities from user
 		glfwPollEvents();
 		// To make sure
-		GLfloat currentFrame = glfwGetTime();
+		GLfloat currentFrame = (GLfloat) glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -221,8 +221,8 @@ int main() {
 
 		// View
 		GLfloat radius = 10.0f;
-		GLfloat camX = sin(glfwGetTime()) * radius;
-		GLfloat camZ = cos(glfwGetTime()) * radius;
+		GLfloat camX = (GLfloat) sin(glfwGetTime()) * radius;
+		GLfloat camZ = (GLfloat) cos(glfwGetTime()) * radius;
 		glm::mat4 view;
 		view = glm::lookAt(cameraPos, cameraFront + cameraPos, cameraUp);
 
@@ -308,15 +308,15 @@ bool firstMouse = true;
 void mouse_callback(GLFWwindow * window, double xPos, double yPos)
 {
 	if (firstMouse) {
-		lastX = xPos;
-		lastY = yPos;
+		lastX = (GLfloat)xPos;
+		lastY = (GLfloat)yPos;
 		firstMouse = false;
 	}
 
-	GLfloat xOffSet = xPos - lastX;
-	GLfloat yOffSet = lastY - yPos;  //Reversed since y - coordinates range from bottom to up
-	lastX = xPos;
-	lastY = yPos;
+	GLfloat xOffSet = (GLfloat)xPos - lastX;
+	GLfloat yOffSet = lastY - (GLfloat)yPos;  //Reversed since y - coordinates range from bottom to up
+	lastX = (GLfloat)xPos;
+	lastY = (GLfloat)yPos;
 
 	GLfloat sensitivity = 0.05f;
 	xOffSet *= sensitivity;
@@ -340,7 +340,7 @@ void mouse_callback(GLFWwindow * window, double xPos, double yPos)
 void scroll_callback(GLFWwindow * window, double xOffset, double yOffset)
 {
 	if (fov >= 1.0f&&fov <= 45.0f) {
-		fov -= yOffset;
+		fov -= (GLfloat)yOffset;
 	}
 	if (fov < 1.0f)
 		fov = 1.0f;
