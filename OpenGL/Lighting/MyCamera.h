@@ -20,7 +20,11 @@ glm::vec3 UP(0.0f, 1.0f, 0.0f);
 glm::vec3 FRONT(0.0f, 0.0f, -1.0f);
 glm::vec3&& RIGHT = glm::normalize(glm::cross(UP, POSITION + FRONT));
 
+GLfloat PITCH(0.0f);
+GLfloat YAW(-90.0f);
+
 GLfloat MOVESPEED = 3.0f;
+GLfloat MOUSESENSITIVITY = 0.25f;
 
 class Camera {
 public:
@@ -30,11 +34,17 @@ public:
 	glm::vec3 right;
 	glm::vec3 front;
 
+	GLfloat pitch;
+	GLfloat yaw;
+
+	GLfloat mouseSensitivity;
+
 	// angles
 
 	GLfloat moveSpeed;
 
-	Camera() :position(POSITION), up(UP), right(RIGHT), front(FRONT), moveSpeed(MOVESPEED) {}
+	Camera() :position(POSITION), up(UP), right(RIGHT), front(FRONT), moveSpeed(MOVESPEED),
+		pitch(PITCH), yaw(YAW), mouseSensitivity(MOUSESENSITIVITY) {}
 
 	void do_key(CameraMovement direction, GLfloat deltatime) {
 		GLfloat v = deltatime*moveSpeed;
@@ -48,13 +58,35 @@ public:
 			position -= right*v;
 	}
 
+	void do_mouse(double xOffSet, double yOffSet) {
+		xOffSet *= mouseSensitivity;
+		yOffSet *= mouseSensitivity;
+
+		pitch += (GLfloat)yOffSet;
+		yaw += (GLfloat)xOffSet;
+
+		if (pitch > 89.0f)
+			pitch = 89.0f;
+		if (pitch < -89.0f)
+			pitch = -89.0f;
+		updateVectors();
+	}
+
 	glm::mat4 getViewMatrix() {
 		return glm::lookAt(position, position + front, up);
 	}
 
 private:
-	void update() {
-
+	void updateVectors() {
+		glm::vec3 front;
+		front.x = cos(glm::radians(pitch))*cos(glm::radians(yaw));
+		front.y = sin(glm::radians(pitch));
+		front.z = cos(glm::radians(pitch))*sin(glm::radians(yaw));
+		this->front = glm::normalize(front);
+		this->right = glm::normalize(glm::cross(this->front, this->up));
+		//this->up = glm::normalize(glm::cross(this->right, this->front));
+		std::cout << "front" << this->front.x << " " << this->front.y << " " << this->front.z << std::endl;
+		std::cout << "up" << this->up.x << " " << this->up.y << " " << this->up.z << std::endl;
 	}
 };
 

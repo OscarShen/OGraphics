@@ -20,12 +20,13 @@
 
 // Function prototys //////////////////////
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+void mouse_callback(GLFWwindow * window, double xPos, double yPos);
 void do_movement();
 
 // GLOBAL /////////////////
 const GLuint WIDTH = 800, HEIGHT = 600;
 bool keys[2014];// Record the keys user pressed.
-GLfloat lastX = 0, lastY = 0;
+double lastX = 0, lastY = 0;
 Camera camera;
 GLfloat deltatime;
 GLfloat lasttime = (GLfloat)glfwGetTime();
@@ -40,7 +41,11 @@ int main() {
 	// Create window
 	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "ILoveOpenGL!", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
+	
 	glfwSetKeyCallback(window, key_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	glewExperimental = GL_TRUE;
 	glewInit();
@@ -196,6 +201,25 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (action == GLFW_RELEASE)
 			keys[key] = false;
 	}
+}
+
+bool firstMouse = true;
+void mouse_callback(GLFWwindow * window, double xPos, double yPos)
+{
+	std::cout << "mouse" << std::endl;
+	if (firstMouse) {
+		lastX = xPos;
+		lastY = yPos;
+		firstMouse = false;
+	}
+	double xOffSet, yOffSet;
+	xOffSet = xPos - lastX;
+	yOffSet = lastY - yPos;
+
+	lastX = xPos;
+	lastY = yPos;
+	
+	camera.do_mouse(xOffSet, yOffSet);
 }
 
 void do_movement() {
