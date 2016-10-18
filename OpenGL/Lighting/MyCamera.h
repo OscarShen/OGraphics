@@ -84,11 +84,6 @@ private:
 		front.z = cos(glm::radians(pitch))*sin(glm::radians(yaw));
 		this->front = glm::normalize(front);
 		this->right = glm::normalize(glm::cross(this->front, this->up));
-		//this->up = glm::normalize(glm::cross(this->right, this->front));
-		std::cout << "front" << this->front.x << " " << this->front.y << " " << this->front.z << std::endl;
-		std::cout << "up" << this->up.x << " " << this->up.y << " " << this->up.z << std::endl;
 	}
 };
-
-
 #endif // !MyCamera_h_

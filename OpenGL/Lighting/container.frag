@@ -7,5 +7,6 @@ uniform vec3 containerColor;
 
 void main()
 {
-    color = vec4(lightColor*containerColor, 1.0f);
+	float ambientColor = 0.3f;
+    color = vec4(lightColor*containerColor*ambientColor, 1.0f);
 }
