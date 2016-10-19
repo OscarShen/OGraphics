@@ -20,7 +20,6 @@
 // Function prototys //////////////////////
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
-void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 void do_movement();
 
 // GLOBAL ///////////////////////
@@ -48,7 +47,6 @@ int main() {
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouse_callback);
-	glfwSetScrollCallback(window, scroll_callback);
 	glewExperimental = GL_TRUE;
 	glewInit();
 
@@ -224,7 +222,7 @@ int main() {
 
 		// Profection
 		glm::mat4 projection;
-		projection = glm::perspective(camera.zoom, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
+		projection = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
 
 		GLuint modelLoc = glGetUniformLocation(shader.program, "model");
 		glUniformMatrix4fv(glGetUniformLocation(shader.program, "view"), 1, GL_FALSE, glm::value_ptr(camera.getViewMatrix()));
@@ -264,13 +262,13 @@ int main() {
 
 void do_movement() {
 	if (keys[GLFW_KEY_W])
-		camera.key(FORWARD, deltaTime);
+		camera.do_key(CameraMovement::MOVEFORWARD, deltaTime);
 	if (keys[GLFW_KEY_S])
-		camera.key(BACKWARD, deltaTime);
+		camera.do_key(CameraMovement::MOVEBACKWARD, deltaTime);
 	if (keys[GLFW_KEY_A])
-		camera.key(LEFT, deltaTime);
+		camera.do_key(CameraMovement::MOVELEFT, deltaTime);
 	if (keys[GLFW_KEY_D])
-		camera.key(RIGHT, deltaTime);
+		camera.do_key(CameraMovement::MOVERIGHT, deltaTime);
 	if (keys[GLFW_KEY_UP]) {
 		mixValue += 0.002f;
 		if (mixValue > 1.0f)
@@ -311,10 +309,5 @@ void mouse_callback(GLFWwindow * window, double xPos, double yPos)
 	lastX = xPos;
 	lastY = yPos;
 
-	camera.mouse(xOffSet, yOffSet);
-}
-
-void scroll_callback(GLFWwindow * window, double xOffset, double yOffset)
-{
-	camera.scroll(xOffset, yOffset);
+	camera.do_mouse(xOffSet, yOffSet);
 }

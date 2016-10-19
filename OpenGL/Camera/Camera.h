@@ -1,105 +1,98 @@
-﻿#pragma once
-#ifndef Camera_h_
-#define Camera_h_
-#include <vector>
-#include <GL\glew.h>
-#include <glm\glm.hpp>
+#pragma once
+#ifndef MyCamera_h_
+#define MyCamera_h_
+
+#include <GL\GL.h>
+#include <glm\gtc\type_ptr.hpp>
 #include <glm\gtc\matrix_transform.hpp>
-#include <iostream>
+#include <glm\glm.hpp>
+
 enum CameraMovement
 {
-	FORWARD,
-	BACKWARD,
-	LEFT,
-	RIGHT
+	MOVEFORWARD,
+	MOVEBACKWARD,
+	MOVELEFT,
+	MOVERIGHT
 };
 
-// Defult camera values
-const GLfloat YAW = -90.0f;
-const GLfloat PITCH = 0.0f;
-const GLfloat SPEED = 3.0f;
-const GLfloat SENSITIVITY = 0.25f;
-const GLfloat ZOOM = 45.0f;
+glm::vec3 POSITION(0.0f, 0.0f, 3.0f);
+glm::vec3 UP(0.0f, 1.0f, 0.0f);
+glm::vec3 FRONT(0.0f, 0.0f, -1.0f);
+glm::vec3&& RIGHT = glm::normalize(glm::cross(UP, POSITION + FRONT));
+
+GLfloat PITCH(0.0f);
+GLfloat YAW(-90.0f);
+
+GLfloat MOVESPEED = 3.0f;
+GLfloat MOUSESENSITIVITY = 0.25f;
 
 class Camera {
 public:
-	// Attributes
+	// vectors of camera
 	glm::vec3 position;
-	glm::vec3 front;
 	glm::vec3 up;
 	glm::vec3 right;
-	//glm::vec3 worldUp;
-	// Eular angles
-	GLfloat yaw; // left and right
-	GLfloat pitch;// up and down
-	// Camera options
-	GLfloat movementSpeed;
+	glm::vec3 front;
+
+	GLfloat pitch;
+	GLfloat yaw;
+
 	GLfloat mouseSensitivity;
-	GLfloat zoom;
 
-	// Constructor
-	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), 
-		GLfloat yaw = YAW, GLfloat pitch = PITCH) :
-		position(position),front(glm::vec3(0.0f, 0.0f, -1.0f)), up(up),yaw(yaw),pitch(pitch),
-		movementSpeed(SPEED), mouseSensitivity(SENSITIVITY), zoom(ZOOM) {}
+	// angles
 
-	glm::mat4 getViewMatrix() { 
-		return glm::lookAt(position, position + front, glm::vec3(0.0f, 1.0f, 0.0f));
+	GLfloat moveSpeed;
+
+	Camera() :position(POSITION), up(UP), right(RIGHT), front(FRONT), moveSpeed(MOVESPEED),
+		pitch(PITCH), yaw(YAW), mouseSensitivity(MOUSESENSITIVITY) {}
+
+	void do_key(CameraMovement direction, GLfloat deltatime) {
+		GLfloat v = deltatime*moveSpeed;
+		switch (direction)
+		{
+		case MOVEFORWARD:
+			position += front*v;
+			break;
+		case MOVEBACKWARD:
+			position -= front*v;
+			break;
+		case MOVELEFT:
+			position -= right*v;
+			break;
+		case MOVERIGHT:
+			position += right*v;
+			break;
+		default:
+			break;
+		}
 	}
 
-	void scroll(double xOffset, double yOffset) {
-		std::cout << "scroll" << std::endl;
-		zoom += yOffset;
-		if (zoom < 1.0f)
-			zoom = 1.0f;
-		if (zoom > 45.0f)
-			zoom = 45.0f;
-		updateCameraVectors();
-	}
-
-	void mouse(double xOffSet, double yOffSet)
-	{
-		std::cout << "mouse" << std::endl;
+	void do_mouse(double xOffSet, double yOffSet) {
 		xOffSet *= mouseSensitivity;
 		yOffSet *= mouseSensitivity;
 
-		yaw += xOffSet;
-		pitch += yOffSet;
+		pitch += (GLfloat)yOffSet;
+		yaw += (GLfloat)xOffSet;
 
 		if (pitch > 89.0f)
 			pitch = 89.0f;
 		if (pitch < -89.0f)
 			pitch = -89.0f;
-		updateCameraVectors();
+		updateVectors();
 	}
 
-	void key(CameraMovement direction, GLfloat deltaTime) {
-		GLfloat v = deltaTime * movementSpeed;
-		if (direction == FORWARD)
-			position += front*v;
-		if (direction == BACKWARD)
-			position -= front*v;
-		if (direction == LEFT)
-			position -= right*v;
-		if (direction == RIGHT)
-			position += right*v;
-		updateCameraVectors();
-		std::cout << front.x << " " << front.y << " " << front.z << std::endl;
+	glm::mat4 getViewMatrix() {
+		return glm::lookAt(position, position + front, up);
 	}
 
 private:
-	void updateCameraVectors()
-	{
-		// Calculate the new Front vector
+	void updateVectors() {
 		glm::vec3 front;
-		front.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-		front.y = sin(glm::radians(this->pitch));
-		front.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
+		front.x = cos(glm::radians(pitch))*cos(glm::radians(yaw));
+		front.y = sin(glm::radians(pitch));
+		front.z = cos(glm::radians(pitch))*sin(glm::radians(yaw));
 		this->front = glm::normalize(front);
-		// Also re-calculate the Right and Up vector
-		this->right = glm::normalize(glm::cross(this->front, this->up));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-		this->up = glm::normalize(glm::cross(this->right, this->front));
+		this->right = glm::normalize(glm::cross(this->front, this->up));
 	}
 };
-
-#endif // !Camera_h_
+#endif // !MyCamera_h_

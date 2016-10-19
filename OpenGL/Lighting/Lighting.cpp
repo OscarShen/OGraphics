@@ -16,7 +16,7 @@
 #include "../Shader/Shader.h"
 
 // Camera
-#include "MyCamera.h"
+#include "../Camera/Camera.h"
 
 // Function prototys //////////////////////
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
@@ -31,7 +31,6 @@ Camera camera;
 GLfloat deltatime;
 GLfloat lasttime = (GLfloat)glfwGetTime();
 // Light attributes
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 int main() {
 	glfwInit();
@@ -139,6 +138,8 @@ int main() {
 		deltatime = currenttime - lasttime;
 		lasttime = currenttime;
 
+		glm::vec3 lightPos(cos(currenttime), sin(currenttime), 2 * cos(currenttime));
+
 		do_movement();
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -169,11 +170,30 @@ int main() {
 		glm::vec3 containerColor(1.0f, 0.5f, 0.31f);
 		glUniform3fv(glGetUniformLocation(containerShader.program, "containerColor"), 1, glm::value_ptr(containerColor));
 
-		// Light pos
-		glUniform3f(glGetUniformLocation(containerShader.program, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
-
 		// View pos
 		glUniform3f(glGetUniformLocation(containerShader.program, "viewPos"), camera.position.x, camera.position.y, camera.position.z);
+
+		// Material
+		GLint matAmbientLoc = glGetUniformLocation(containerShader.program, "material.ambient");
+		GLint matDiffuseLoc = glGetUniformLocation(containerShader.program, "material.diffuse");
+		GLint matSpecularLoc = glGetUniformLocation(containerShader.program, "material.specular");
+		GLint matShineLoc = glGetUniformLocation(containerShader.program, "material.shininess");
+
+		glUniform3f(matAmbientLoc, 1.0f, 0.5f, 0.31f);
+		glUniform3f(matDiffuseLoc, 1.0f, 0.5f, 0.31f);
+		glUniform3f(matSpecularLoc, 0.5f, 0.5f, 0.5f);
+		glUniform1f(matShineLoc, 32.0f);
+
+		// Light
+		GLint lightAmbientLoc = glGetUniformLocation(containerShader.program, "light.ambient");
+		GLint lightDiffuseLoc = glGetUniformLocation(containerShader.program, "light.diffuse");
+		GLint lightSpecularLoc = glGetUniformLocation(containerShader.program, "light.specular");
+		GLint lightPositionLoc = glGetUniformLocation(containerShader.program, "light.position");
+
+		glUniform3f(lightAmbientLoc, 0.2f, 0.2f, 0.2f);
+		glUniform3f(lightDiffuseLoc, 0.5f, 0.5f, 0.5f);
+		glUniform3f(lightSpecularLoc, 1.0f, 1.0f, 1.0f);
+		glUniform3f(lightPositionLoc, lightPos.x, lightPos.y, lightPos.z);
 		
 		glBindVertexArray(containerVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
