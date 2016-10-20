@@ -33,7 +33,7 @@ int main() {
 
 	glViewport(0, 0, WIDTH, HEIGHT);
 
-	Shader shader("resource/texture.vs", "resource/texture.frag");
+	Shader shader("Texture/resource/texture.vs", "Texture/resource/texture.frag");
 	GLfloat vertices[] = {
 		// Positions          // Colors           // Texture Coords
 		0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // Top Right
@@ -85,7 +85,7 @@ int main() {
 
 	// Load image, create texture and generate mipmaps
 	int width, height;
-	unsigned char* image = SOIL_load_image("resource/gaoyuanyuan.jpg", &width, &height, 0, SOIL_LOAD_RGB);
+	unsigned char* image = SOIL_load_image("Texture/resource/gaoyuanyuan.jpg", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
@@ -103,7 +103,7 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// Load, create texture and generate mipmaps
-	image = SOIL_load_image("resource/awesomeface.png", &width, &height, 0, SOIL_LOAD_RGB);
+	image = SOIL_load_image("Texture/resource/awesomeface.png", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
@@ -122,7 +122,6 @@ int main() {
 		//// Bind texture
 		//glBindTexture(GL_TEXTURE_2D, texture);
 
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
 		glUniform1i(glGetUniformLocation(shader.program, "ourTexture1"), 0);
@@ -138,8 +137,6 @@ int main() {
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 
-		// Sorry I don't know what is the function used for.--2016.10.01
-		// SwapBuffer between foreground and background,means that we finish my work and ready to push to screen.--2016.10.02
 		glfwSwapBuffers(window);
 	}
 	// Release all the resources.
