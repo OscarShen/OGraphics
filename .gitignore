@@ -2,3 +2,4 @@
 *.filters
 GDI/Debug
 OpenGL/Debug
+*.user
