@@ -21,6 +21,7 @@ out vec4 color;
 uniform vec3 viewPos;
 uniform Material material;
 uniform Light light;
+uniform sampler2D emission;
 
 void main()
 {
@@ -38,6 +39,9 @@ void main()
     vec3 reflectDir = reflect(-lightDir, norm);  
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
+
+	// Emission
+	vec3 emit = vec3(texture(emission, TexCoords));
         
-    color = vec4(ambient + diffuse + specular, 1.0f);  
+    color = vec4(ambient + diffuse + specular + emit, 1.0f);  
 } 
