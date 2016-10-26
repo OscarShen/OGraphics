@@ -108,6 +108,19 @@ int main() {
 		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
 	};
 
+	glm::vec3 cubePositions[] = {
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
+	};
+
 	GLuint containerVAO, VBO;
 	glCreateBuffers(1, &VBO);
 	glCreateVertexArrays(1, &containerVAO);
@@ -137,10 +150,9 @@ int main() {
 	glBindVertexArray(0);
 
 	// Load textures
-	GLuint diffuseMap, specularMap, emissionMap;
+	GLuint diffuseMap, specularMap;
 	glCreateTextures(GL_TEXTURE_2D, 1, &diffuseMap);
 	glCreateTextures(GL_TEXTURE_2D, 1, &specularMap);
-	glCreateTextures(GL_TEXTURE_2D, 1, &emissionMap);
 
 	int width, height;
 	unsigned char* image;
@@ -168,18 +180,6 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	// Emission map
-	image = SOIL_load_image("Lighting/resource/matrix.jpg", &width, &height, 0, SOIL_LOAD_RGB);
-	glBindTexture(GL_TEXTURE_2D, emissionMap);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	SOIL_free_image_data(image);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
 	// Set texture units
 	containerShader.use();
 	glUniform1i(glGetUniformLocation(containerShader.program, "material.diffuse"), 0);
@@ -193,7 +193,8 @@ int main() {
 		deltatime = currenttime - lasttime;
 		lasttime = currenttime;
 
-		glm::vec3 lightPos(cos(currenttime), sin(currenttime), 2 * cos(currenttime));
+		//glm::vec3 lightPos(cos(currenttime), sin(currenttime), 2 * cos(currenttime));
+		glm::vec3 lightDir(-0.2f, -1.0f, -0.3f);
 
 		do_movement();
 
@@ -230,12 +231,12 @@ int main() {
 		GLint lightAmbientLoc = glGetUniformLocation(containerShader.program, "light.ambient");
 		GLint lightDiffuseLoc = glGetUniformLocation(containerShader.program, "light.diffuse");
 		GLint lightSpecularLoc = glGetUniformLocation(containerShader.program, "light.specular");
-		GLint lightPositionLoc = glGetUniformLocation(containerShader.program, "light.position");
+		GLint lightDiritionLoc = glGetUniformLocation(containerShader.program, "light.direction");
 
 		glUniform3f(lightAmbientLoc, 0.3f, 0.3f, 0.3f);
 		glUniform3f(lightDiffuseLoc, 0.5f, 0.5f, 0.5f);
 		glUniform3f(lightSpecularLoc, 1.0f, 1.0f, 1.0f);
-		glUniform3f(lightPositionLoc, lightPos.x, lightPos.y, lightPos.z);
+		glUniform3f(lightDiritionLoc, lightDir.x, lightDir.y, lightDir.z);
 
 		// Bind diffuse map
 		glActiveTexture(GL_TEXTURE0);
@@ -243,30 +244,18 @@ int main() {
 		// Bind specular map
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, specularMap);
-		// Bind emission map
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, emissionMap);
 
 		glBindVertexArray(containerVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-
-		// Light position
-		model = glm::mat4();
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f));
-
-		lightShader.use();
-		auto lightModel = glGetUniformLocation(lightShader.program, "model");
-		glUniformMatrix4fv(lightModel, 1, GL_FALSE, glm::value_ptr(model));
-		auto lightView = glGetUniformLocation(lightShader.program, "view");
-		glUniformMatrix4fv(lightView, 1, GL_FALSE, glm::value_ptr(view));
-		auto lightProj = glGetUniformLocation(lightShader.program, "projection");
-		glUniformMatrix4fv(lightProj, 1, GL_FALSE, glm::value_ptr(projection));
-
-
-		glBindVertexArray(lightVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		// glDrawArrays(GL_TRIANGLES, 0, 36);
+		for (GLuint i = 0; i < 10; i++)
+		{
+			glm::mat4 model;
+			model = glm::translate(model, cubePositions[i]);
+			GLfloat angle = 20.0f * i;
+			model = glm::rotate(model, angle, glm::vec3(1.0f, 0.3f, 0.5f));
+			glUniformMatrix4fv(comtainerModel, 1, GL_FALSE, glm::value_ptr(model));
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
