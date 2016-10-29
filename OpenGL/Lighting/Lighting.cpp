@@ -108,28 +108,46 @@ int main() {
 	glCreateBuffers(1, &VBO);
 	glCreateVertexArrays(1, &containerVAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	// OpenGL 4.5
+	glNamedBufferStorage(VBO, sizeof(vertices), vertices, 0);
+	glVertexArrayVertexBuffer(containerVAO, 0, VBO, 0, 6 * sizeof(GL_FLOAT));
+	glVertexArrayAttribFormat(containerVAO, 0, 3, GL_FLOAT, GL_FALSE, 0);
+	glVertexArrayAttribBinding(containerVAO, 0, 0);
+	glEnableVertexArrayAttrib(containerVAO,0);
 
-	glBindVertexArray(containerVAO);
-	// Vertex attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), 0);
-	glEnableVertexAttribArray(0);
-	// Normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	glVertexArrayAttribFormat(containerVAO, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT));
+	glVertexArrayAttribBinding(containerVAO, 1, 0);
+	glEnableVertexArrayAttrib(containerVAO, 1);
+
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	//glBindVertexArray(containerVAO);
+	//// Vertex attribute
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), 0);
+	//glEnableVertexAttribArray(0);
+	//// Normal attribute
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	//glEnableVertexAttribArray(1);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindVertexArray(0);
+
+
+	//GLuint lightVAO;
+	//glCreateVertexArrays(1, &lightVAO);
+	//glBindVertexArray(lightVAO);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	//// Vertex attribute
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), 0);
+	//glEnableVertexAttribArray(0);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindVertexArray(0);
 
 	GLuint lightVAO;
 	glCreateVertexArrays(1, &lightVAO);
-	glBindVertexArray(lightVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	// Vertex attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), 0);
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	glVertexArrayVertexBuffer(lightVAO, 0, VBO, 0, 6 * sizeof(GL_FLOAT));
+	glVertexArrayAttribFormat(lightVAO, 0, 3, GL_FLOAT, GL_FALSE, 0);
+	glVertexArrayAttribBinding(lightVAO, 0, 0);
+	glEnableVertexArrayAttrib(lightVAO, 0);
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -175,7 +193,7 @@ int main() {
 		glUniform3f(matAmbientLoc, 1.0f, 0.5f, 0.31f);
 		glUniform3f(matDiffuseLoc, 1.0f, 0.5f, 0.31f);
 		glUniform3f(matSpecularLoc, 0.5f, 0.5f, 0.5f);
-		glUniform1f(matShineLoc, 32.0f);
+		glUniform1f(matShineLoc, 16.0f);
 
 		// Light
 		GLint lightAmbientLoc = glGetUniformLocation(containerShader.program, "light.ambient");

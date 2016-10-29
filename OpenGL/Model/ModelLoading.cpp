@@ -45,7 +45,8 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "ILoveOpenGL", nullptr, nullptr); // Windowed
+	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, 
+		"ILoveOpenGL", nullptr, nullptr); // Windowed
 	glfwMakeContextCurrent(window);
 
 	// Set the required callback functions
@@ -69,6 +70,12 @@ int main() {
 	Shader shader("Model/vertex.vs", "Model/fragment.frag");
 	Model myModel("Model/resource/nanosuit.obj");
 
+	// Point light positions
+	glm::vec3 pointLightPositions[] = {
+		glm::vec3(2.3f,-1.6f,-3.0f),
+		glm::vec3(-1.7f,0.9f,1.0f)
+	};
+
 	while (!glfwWindowShouldClose(window)) {
 		// Set frame time
 		GLfloat currentFrame = glfwGetTime();
@@ -86,6 +93,25 @@ int main() {
 		glm::mat4 view = camera.getViewMatrix();
 		glUniformMatrix4fv(glGetUniformLocation(shader.program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(glGetUniformLocation(shader.program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+
+		// Set the lighting uniforms
+		glUniform3f(glGetUniformLocation(shader.program, "viewPos"), camera.position.x, camera.position.y, camera.position.z);
+		// Point light 1
+		glUniform3f(glGetUniformLocation(shader.program, "pointLights[0].position"), pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z);
+		glUniform3f(glGetUniformLocation(shader.program, "pointLights[0].ambient"), 0.05f, 0.05f, 0.05f);
+		glUniform3f(glGetUniformLocation(shader.program, "pointLights[0].diffuse"), 1.0f, 1.0f, 1.0f);
+		glUniform3f(glGetUniformLocation(shader.program, "pointLights[0].specular"), 1.0f, 1.0f, 1.0f);
+		glUniform1f(glGetUniformLocation(shader.program, "pointLights[0].constant"), 1.0f);
+		glUniform1f(glGetUniformLocation(shader.program, "pointLights[0].linear"), 0.009);
+		glUniform1f(glGetUniformLocation(shader.program, "pointLights[0].quadratic"), 0.0032);
+		// Point light 2
+		glUniform3f(glGetUniformLocation(shader.program, "pointLights[1].position"), pointLightPositions[1].x, pointLightPositions[1].y, pointLightPositions[1].z);
+		glUniform3f(glGetUniformLocation(shader.program, "pointLights[1].ambient"), 0.05f, 0.05f, 0.05f);
+		glUniform3f(glGetUniformLocation(shader.program, "pointLights[1].diffuse"), 1.0f, 1.0f, 1.0f);
+		glUniform3f(glGetUniformLocation(shader.program, "pointLights[1].specular"), 1.0f, 1.0f, 1.0f);
+		glUniform1f(glGetUniformLocation(shader.program, "pointLights[1].constant"), 1.0f);
+		glUniform1f(glGetUniformLocation(shader.program, "pointLights[1].linear"), 0.009);
+		glUniform1f(glGetUniformLocation(shader.program, "pointLights[1].quadratic"), 0.0032);
 
 		// Draw the loaded model
 		glm::mat4 model;
