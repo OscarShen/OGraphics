@@ -65,6 +65,7 @@ int main() {
 
 	// Setup some OpenGL options
 	glEnable(GL_DEPTH_TEST);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// Setup and compile our shaders
 	Shader shader("Model/vertex.vs", "Model/fragment.frag");
@@ -78,7 +79,7 @@ int main() {
 
 	while (!glfwWindowShouldClose(window)) {
 		// Set frame time
-		GLfloat currentFrame = glfwGetTime();
+		GLfloat currentFrame = (GLfloat)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		std::cout << (int)(1/deltaTime) << std::endl;
@@ -102,16 +103,16 @@ int main() {
 		glUniform3f(glGetUniformLocation(shader.program, "pointLights[0].diffuse"), 1.0f, 1.0f, 1.0f);
 		glUniform3f(glGetUniformLocation(shader.program, "pointLights[0].specular"), 1.0f, 1.0f, 1.0f);
 		glUniform1f(glGetUniformLocation(shader.program, "pointLights[0].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(shader.program, "pointLights[0].linear"), 0.009);
-		glUniform1f(glGetUniformLocation(shader.program, "pointLights[0].quadratic"), 0.0032);
+		glUniform1f(glGetUniformLocation(shader.program, "pointLights[0].linear"), 0.009f);
+		glUniform1f(glGetUniformLocation(shader.program, "pointLights[0].quadratic"), 0.0032f);
 		// Point light 2
 		glUniform3f(glGetUniformLocation(shader.program, "pointLights[1].position"), pointLightPositions[1].x, pointLightPositions[1].y, pointLightPositions[1].z);
 		glUniform3f(glGetUniformLocation(shader.program, "pointLights[1].ambient"), 0.05f, 0.05f, 0.05f);
 		glUniform3f(glGetUniformLocation(shader.program, "pointLights[1].diffuse"), 1.0f, 1.0f, 1.0f);
 		glUniform3f(glGetUniformLocation(shader.program, "pointLights[1].specular"), 1.0f, 1.0f, 1.0f);
 		glUniform1f(glGetUniformLocation(shader.program, "pointLights[1].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(shader.program, "pointLights[1].linear"), 0.009);
-		glUniform1f(glGetUniformLocation(shader.program, "pointLights[1].quadratic"), 0.0032);
+		glUniform1f(glGetUniformLocation(shader.program, "pointLights[1].linear"), 0.009f);
+		glUniform1f(glGetUniformLocation(shader.program, "pointLights[1].quadratic"), 0.0032f);
 
 		// Draw the loaded model
 		glm::mat4 model;
@@ -163,16 +164,16 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (GLfloat)xpos;
+		lastY = (GLfloat)ypos;
 		firstMouse = false;
 	}
 
-	GLfloat xoffset = xpos - lastX;
-	GLfloat yoffset = lastY - ypos;
+	GLfloat xoffset = (GLfloat)(xpos - lastX);
+	GLfloat yoffset = (GLfloat)(lastY - ypos);
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (GLfloat)xpos;
+	lastY = (GLfloat)ypos;
 
 	camera.do_mouse(xoffset, yoffset);
 }
