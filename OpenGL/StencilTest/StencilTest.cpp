@@ -59,7 +59,14 @@ int main() {
 	// Setup some OpenGL options
 	glEnable(GL_DEPTH_TEST);
 
-	Shader shader("DepthTest/vertex.vs", "DepthTest/fragment.frag");
+	Shader shader("StencilTest/vertex.vs", "StencilTest/fragment.frag");
+	Shader outlineShader("StencilTest/vertex.vs", "StencilTest/outline.frag");
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_STENCIL_TEST);
+	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 #pragma region "object_initialization"
 	// Set the object data (buffers, vertex attributes)
@@ -138,14 +145,14 @@ int main() {
 	glBindVertexArray(0);
 
 	// Setup planet
-	GLuint planetVAO, planetVBO;
-	glGenBuffers(1, &planetVAO);
+	GLuint planeVAO, planetVBO;
+	glGenBuffers(1, &planeVAO);
 	glGenVertexArrays(1, &planetVBO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, planetVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
 
-	glBindVertexArray(planetVAO);
+	glBindVertexArray(planeVAO);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), 0);
 	glEnableVertexAttribArray(0);
@@ -159,9 +166,6 @@ int main() {
 	GLuint cubeTexture = loadTexture("resource/texture/marble.jpg");
 	GLuint floorTexture = loadTexture("resource/texture/metal.png");
 
-	// Depth function
-	glDepthFunc(GL_LESS);
-
 #pragma endregion
 
 	while (!glfwWindowShouldClose(window)) {
@@ -172,33 +176,26 @@ int main() {
 
 		// Clear the colorbuffer
 		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		shader.use();
-		// Cubes
-		glBindVertexArray(cubeVAO);
-		glBindTexture(GL_TEXTURE_2D, cubeTexture);
+
 		glm::mat4 model;
 		glm::mat4 view = camera.getViewMatrix();
 		glm::mat4 projection = glm::perspective(45.0f, (GLfloat)screenWidth / screenHeight, 0.1f, 100.0f);
 
+		outlineShader.use();
+		glUniformMatrix4fv(glGetUniformLocation(outlineShader.program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(outlineShader.program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+		shader.use();
 		glUniformMatrix4fv(glGetUniformLocation(shader.program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(shader.program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
-		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		// Planme should not fill stencil buffer
+		glStencilMask(0x00);
 
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-
-		// Planet
-		glBindVertexArray(planetVAO);
+		// Plane
+		glBindVertexArray(planeVAO);
 		glBindTexture(GL_TEXTURE_2D, floorTexture);
 		model = glm::mat4();
 		glUniformMatrix4fv(glGetUniformLocation(shader.program, "model"), 1, GL_FALSE, glm::value_ptr(model));
@@ -206,6 +203,50 @@ int main() {
 		glBindVertexArray(0);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
+
+		// All the pixels of cubes pass the stencil test
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilMask(0xFF);
+
+		// Cubes
+		glBindVertexArray(cubeVAO);
+		glBindTexture(GL_TEXTURE_2D, cubeTexture);
+		model = glm::translate(glm::mat4(), glm::vec3(-1.0f, 0.0f, -1.0f));
+		glUniformMatrix4fv(glGetUniformLocation(shader.program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		
+		model = glm::translate(glm::mat4(), glm::vec3(2.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(glGetUniformLocation(shader.program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindVertexArray(0);
+
+		// Pixels of cubes are filled to 1, so if we judge which is not equal to 1 is the outline
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		// We do not need fill stencil buffer now
+		glStencilMask(0x00);
+		// Shutdown depth test, so outline can put in forward
+		glDisable(GL_DEPTH_TEST);
+
+		outlineShader.use();
+		GLfloat scale = 1.1f;
+
+		glBindVertexArray(cubeVAO);
+		model = glm::translate(glm::mat4(), glm::vec3(-1.0f, 0.0f, -1.0f));
+		model = glm::scale(model, glm::vec3(scale, scale, scale));
+		glUniformMatrix4fv(glGetUniformLocation(outlineShader.program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		model = glm::translate(glm::mat4(), glm::vec3(2.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(scale, scale, scale));
+		glUniformMatrix4fv(glGetUniformLocation(outlineShader.program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		glBindVertexArray(0);
+
+		// Change to initial state
+		glStencilMask(0xFF);
+		glEnable(GL_DEPTH_TEST);
 
 		// Check and call events
 		glfwPollEvents();

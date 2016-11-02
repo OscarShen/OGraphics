@@ -15,6 +15,7 @@ GLuint loadTexture(GLchar * path)
 	// Assign texture to ID
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	std::cout << width << std::endl;
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	// Parameters
