@@ -85,7 +85,6 @@ public:
 		return glm::lookAt(position, position + front, up);
 	}
 
-private:
 	void updateVectors() {
 		glm::vec3 front;
 		front.x = cos(glm::radians(pitch))*cos(glm::radians(yaw));
