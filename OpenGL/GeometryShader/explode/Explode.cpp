@@ -15,9 +15,9 @@
 #include <SOIL.h>
 
 // GL includes
-#include "..\Camera\Camera.h"
-#include "..\Shader\Shader.h"
-#include "Model.h"
+#include "..\..\Camera\Camera.h"
+#include "..\..\Shader\Shader.h"
+#include "..\..\Model\Model.h"
 
 // Properties
 GLuint screenWidth = 800, screenHeight = 600;
@@ -68,7 +68,7 @@ int main() {
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// Setup and compile our shaders
-	Shader shader("Model/vertex.vs", "Model/fragment.frag");
+	Shader shader("GeometryShader/explode/vertex.vs", "GeometryShader/explode/fragment.frag","GeometryShader/explode/geometry.gs");
 	Model myModel("resource/nanoObj/nanosuit.obj");
 
 	// Point light positions
@@ -77,42 +77,29 @@ int main() {
 		glm::vec3(-1.7f,0.9f,1.0f)
 	};
 
+	shader.use();
+	// Transformation matrices
+	glm::mat4 projection = glm::perspective(45.0f, (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
+	glUniformMatrix4fv(glGetUniformLocation(shader.program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	int i = 0;
 	while (!glfwWindowShouldClose(window)) {
 		// Set frame time
 		GLfloat currentFrame = (GLfloat)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		std::cout << (int)(1/deltaTime) << std::endl;
+		if (++i % 128 == 0)
+			std::cout << (int)(1 / deltaTime) << std::endl;
 
 		// Clear the colorbuffer
 		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		shader.use();
-		// Transformation matrices
-		glm::mat4 projection = glm::perspective(45.0f, (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
+#pragma region "render"
 		glm::mat4 view = camera.getViewMatrix();
-		glUniformMatrix4fv(glGetUniformLocation(shader.program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(glGetUniformLocation(shader.program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
-		// Set the lighting uniforms
-		glUniform3f(glGetUniformLocation(shader.program, "viewPos"), camera.position.x, camera.position.y, camera.position.z);
-		// Point light 1
-		glUniform3f(glGetUniformLocation(shader.program, "pointLights[0].position"), pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z);
-		glUniform3f(glGetUniformLocation(shader.program, "pointLights[0].ambient"), 0.05f, 0.05f, 0.05f);
-		glUniform3f(glGetUniformLocation(shader.program, "pointLights[0].diffuse"), 1.0f, 1.0f, 1.0f);
-		glUniform3f(glGetUniformLocation(shader.program, "pointLights[0].specular"), 1.0f, 1.0f, 1.0f);
-		glUniform1f(glGetUniformLocation(shader.program, "pointLights[0].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(shader.program, "pointLights[0].linear"), 0.009f);
-		glUniform1f(glGetUniformLocation(shader.program, "pointLights[0].quadratic"), 0.0032f);
-		// Point light 2
-		glUniform3f(glGetUniformLocation(shader.program, "pointLights[1].position"), pointLightPositions[1].x, pointLightPositions[1].y, pointLightPositions[1].z);
-		glUniform3f(glGetUniformLocation(shader.program, "pointLights[1].ambient"), 0.05f, 0.05f, 0.05f);
-		glUniform3f(glGetUniformLocation(shader.program, "pointLights[1].diffuse"), 1.0f, 1.0f, 1.0f);
-		glUniform3f(glGetUniformLocation(shader.program, "pointLights[1].specular"), 1.0f, 1.0f, 1.0f);
-		glUniform1f(glGetUniformLocation(shader.program, "pointLights[1].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(shader.program, "pointLights[1].linear"), 0.009f);
-		glUniform1f(glGetUniformLocation(shader.program, "pointLights[1].quadratic"), 0.0032f);
+		glUniform1f(glGetUniformLocation(shader.program, "time"), currentFrame);
+		//glUniform1f(glGetUniformLocation(shader.program, "time"), glfwGetTime());
 
 		// Draw the loaded model
 		glm::mat4 model;
@@ -120,6 +107,7 @@ int main() {
 		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// It's a bit too big for our scene, so scale it down
 		glUniformMatrix4fv(glGetUniformLocation(shader.program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		myModel.draw(shader);
+#pragma endregion
 
 		// Check and call events
 		glfwPollEvents();
