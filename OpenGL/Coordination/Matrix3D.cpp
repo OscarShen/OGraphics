@@ -37,7 +37,7 @@ int main() {
 
 	glViewport(0, 0, WIDTH, HEIGHT);
 
-	Shader shader("resource/matrix.vs", "resource/matrix.frag");
+	Shader shader("Coordination/resource/matrix.vs", "Coordination/resource/matrix.frag");
 	// Cube
 	GLfloat vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -137,7 +137,7 @@ int main() {
 
 	// Load image, create texture and generate mipmaps
 	int width, height;
-	unsigned char* image = SOIL_load_image("resource/container.jpg", &width, &height, 0, SOIL_LOAD_RGB);
+	unsigned char* image = SOIL_load_image("Coordination/resource/container.jpg", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
