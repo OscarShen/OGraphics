@@ -5,42 +5,42 @@
 #include <sstream>
 #include <SOIL.h>
 // Instantiate static variables
-std::map<std::string, Texture2D>    ResourceManager::Textures;
-std::map<std::string, Shader>		ResourceManager::Shaders;
+std::map<std::string, Texture2D>    ResourceManager::textures;
+std::map<std::string, Shader>		ResourceManager::shaders;
 
-Shader ResourceManager::LoadShader(const GLchar *vShaderFile, const GLchar *fShaderFile, const GLchar *gShaderFile, std::string name)
+Shader ResourceManager::loadShader(const GLchar *vShaderFile, const GLchar *fShaderFile, const GLchar *gShaderFile, std::string name)
 {
-	Shaders[name] = loadShaderFromFile(vShaderFile, fShaderFile, gShaderFile);
-	return Shaders[name];
+	shaders[name] = loadShaderFromFile(vShaderFile, fShaderFile, gShaderFile);
+	return shaders[name];
 }
 
-Shader ResourceManager::GetShader(std::string name)
+Shader ResourceManager::getShader(std::string name)
 {
-	if(Shaders.find(name)!=Shaders.end())
-		return Shaders[name];
+	if(shaders.find(name)!=shaders.end())
+		return shaders[name];
 	return Shader();
 }
 
-Texture2D ResourceManager::LoadTexture(const GLchar *file, GLboolean alpha, std::string name)
+Texture2D ResourceManager::loadTexture(const GLchar *file, GLboolean alpha, std::string name)
 {
-	Textures[name] = loadTextureFromFile(file, alpha);
-	return Textures[name];
+	textures[name] = loadTextureFromFile(file, alpha);
+	return textures[name];
 }
 
-Texture2D ResourceManager::GetTexture(std::string name)
+Texture2D ResourceManager::getTexture(std::string name)
 {
-	if(Textures.find(name)!=Textures.end())
-		return Textures[name];
+	if(textures.find(name)!=textures.end())
+		return textures[name];
 	return Texture2D();
 }
 
-void ResourceManager::Clear()
+void ResourceManager::clear()
 {
 	// (Properly) delete all shaders
-	for (const auto &iter : Shaders)
+	for (const auto &iter : shaders)
 		glDeleteProgram(iter.second.ID);
 	// (Properly) delete all textures
-	for (const auto &iter : Textures)
+	for (const auto &iter : textures)
 		glDeleteTextures(1, &iter.second.ID);
 }
 
