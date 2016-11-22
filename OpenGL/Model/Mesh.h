@@ -42,6 +42,8 @@ public:
 	// Render the mesh
 	void draw(Shader shader);
 
+	const GLuint getVAO() const { return VAO; }
+
 private:
 	/* Render data */
 	GLuint VAO, VBO, EBO;

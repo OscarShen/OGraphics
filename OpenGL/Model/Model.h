@@ -17,6 +17,9 @@ public:
 	// Draw the model, and thus all its meshes
 	void draw(Shader shader);
 
+	const std::vector<Mesh>& getMeshes() const { return meshes; }
+
+	const std::vector<Texture>& getTextureLoaded() const { return textures_loaded; }
 private:
 	/* Model data */
 	std::vector<Mesh> meshes;
