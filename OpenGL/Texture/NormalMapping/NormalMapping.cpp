@@ -74,19 +74,20 @@ int main() {
 
 	// Set texture units
 	shader.use();
+	// Set texture units 
+	shader.use();
 	glUniform1i(glGetUniformLocation(shader.program, "diffuseMap"), 0);
 	glUniform1i(glGetUniformLocation(shader.program, "normalMap"), 1);
 
 	// Light position
-	glm::vec3 lightPos(0.0f, 0.5f, 0.0f);
-	// projection matrix
-	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)(screenWidth) / screenHeight, 0.1f, 100.0f);
+	glm::vec3 lightPos(0.5f, 1.0f, 0.3f);
+
+	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)screenWidth / screenHeight, 0.1f, 100.0f);
 	glUniformMatrix4fv(glGetUniformLocation(shader.program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
 	
 	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_CULL_FACE);
 	
-	bool normalMapping = true;
 #pragma endregion
 	int count = 0;
 	while (!glfwWindowShouldClose(window)) {
@@ -104,18 +105,28 @@ int main() {
 #pragma region "render"
 		shader.use();
 		glm::mat4 view = camera.getViewMatrix();
+		glm::mat4 projection = glm::perspective(45.0f, (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
 		glUniformMatrix4fv(glGetUniformLocation(shader.program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(glGetUniformLocation(shader.program, "model"), 1, GL_FALSE, glm::value_ptr(glm::mat4()));
-
+		glUniformMatrix4fv(glGetUniformLocation(shader.program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		// Render normal-mapped quad
+		glm::mat4 model;
+		model = glm::rotate(model, (GLfloat)glfwGetTime(), glm::normalize(glm::vec3(1.0, 0.0, 1.0))); // Rotates the quad to show normal mapping works in all directions
+		glUniformMatrix4fv(glGetUniformLocation(shader.program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		glUniform3fv(glGetUniformLocation(shader.program, "lightPos"), 1, &lightPos[0]);
 		glUniform3fv(glGetUniformLocation(shader.program, "viewPos"), 1, &camera.position[0]);
-		glUniform1i(glGetUniformLocation(shader.program, "normalMapping"), normalMapping);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, normalMap);
-
 		renderQuad();
+
+		// render light source (simply re-renders a smaller plane at the light's position for debugging/visualization)
+		model = glm::mat4();
+		model = glm::translate(model, lightPos);
+		model = glm::scale(model, glm::vec3(0.1f));
+		glUniformMatrix4fv(glGetUniformLocation(shader.program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		renderQuad();
+
 #pragma endregion
 		// Check and call events
 		glfwPollEvents();
@@ -150,12 +161,13 @@ GLuint quadVAO = 0;
 GLuint quadVBO;
 void renderQuad()
 {
-	if (quadVAO == 0) {
+	if (quadVAO == 0)
+	{
 		// positions
-		glm::vec3 pos1(1.0, 0.0, 1.0);
-		glm::vec3 pos2(1.0, 0.0, -1.0);
-		glm::vec3 pos3(-1.0, 0.0, -1.0);
-		glm::vec3 pos4(-1.0, 0.0, 1.0);
+		glm::vec3 pos1(-1.0, 1.0, 0.0);
+		glm::vec3 pos2(-1.0, -1.0, 0.0);
+		glm::vec3 pos3(1.0, -1.0, 0.0);
+		glm::vec3 pos4(1.0, 1.0, 0.0);
 		// texture coordinates
 		glm::vec2 uv1(0.0, 1.0);
 		glm::vec2 uv2(0.0, 0.0);
