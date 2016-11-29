@@ -19,12 +19,26 @@ float shadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir){
 	// perspective divide
 	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 	projCoords = projCoords * 0.5f + 0.5f;
+	float shadow= 0.0f;
+	if(projCoords.z > 1.0f) {
+		return shadow;
+	}
 	float closestDepth = texture(shadowMap, projCoords.xy).r;
 	float currentDepth = projCoords.z;
 	// float shadow = currentDepth > closestDepth ? 1.0f : 0.0f;
-	float bias = max(0.05f * (1.0f - dot(normal, lightDir)), 0.005f);
-	float shadow = currentDepth - bias > closestDepth ? 1.0f : 0.0f;
-	
+	float bias = max(0.05f * (1.0f - dot(normal, lightDir)), 0.015f);
+	//shadow = currentDepth - bias > closestDepth ? 1.0f : 0.0f;
+	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+	for(int x = -1; x <= 1; ++x)
+	{
+		for(int y = -1; y <= 1; ++y)
+		{
+			float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+			shadow += currentDepth - bias > pcfDepth ? 1.0f : 0.0f;        
+		}    
+	}
+	shadow /= 9.0f;
+
 	return shadow;
 }
 
@@ -33,7 +47,7 @@ void main() {
 	vec3 normal = normalize(fs_in.Normal);
 	vec3 lightColor = vec3(1.0f);
 	// Ambient
-	vec3 ambient = 0.15 * color;
+	vec3 ambient = 0.3 * color;
 	// Diffuse
 	vec3 lightDir = normalize(lightPos - fs_in.FragPos);
 	float diff = max(dot(lightDir, normal), 0.0f);

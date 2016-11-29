@@ -25,7 +25,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void do_Movement();
 
 void renderScene(const Shader &shader);
-void renderQuad();
 void renderCube();
 
 Camera camera;
@@ -48,9 +47,6 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-
-	// multisample
-	// glfwWindowHint(GLFW_SAMPLES, 4);
 
 	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight,
 		"ILoveOpenGL", nullptr, nullptr); // Windowed
@@ -116,8 +112,11 @@ int main() {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHDOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	GLfloat borderColor[] = { 1.0f,1.0f,1.0f,1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
@@ -127,7 +126,6 @@ int main() {
 
 	Shader shader("Shadow/ShadowMapping/shadow_mapping.vs", "Shadow/ShadowMapping/shadow_mapping.frag");
 	Shader simpleDepthShader("Shadow/ShadowMapping/shadow_mapping_depth.vs", "Shadow/ShadowMapping/shadow_mapping_depth.frag");
-	Shader debugDepthShader("Shadow/ShadowMapping/debug_quad.vs", "Shadow/ShadowMapping/debug_quad.frag");
 
 	shader.use();
 	glUniform1i(glGetUniformLocation(shader.program, "diffuseTexture"), 0);
@@ -164,7 +162,9 @@ glCheckError();
 		glViewport(0, 0, SHADOW_WIDTH, SHDOW_HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 		glClear(GL_DEPTH_BUFFER_BIT);
+		glCullFace(GL_FRONT);
 		renderScene(simpleDepthShader);
+		glCullFace(GL_FRONT);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		// Reset viewport
 		glViewport(0, 0, screenWidth, screenHeight);
@@ -182,17 +182,7 @@ glCheckError();
 		glBindTexture(GL_TEXTURE_2D, woodTexture);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
-		glCullFace(GL_FRONT);
 		renderScene(shader);
-		glCullFace(GL_BACK);
-
-		// 3. Render depth map to quad
-		debugDepthShader.use();
-		glUniform1f(glGetUniformLocation(debugDepthShader.program, "near_plane"), near_plane);
-		glUniform1f(glGetUniformLocation(debugDepthShader.program, "far_plane"), far_plane);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, depthMap);
-		//renderQuad();
 
 #pragma endregion
 		// Check and call events
@@ -248,38 +238,6 @@ void renderScene(const Shader & shader)
 	model = glm::scale(model, glm::vec3(0.5f));
 	glUniformMatrix4fv(glGetUniformLocation(shader.program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 	renderCube();
-}
-
-// RenderQuad() Renders a 1x1 quad in NDC, best used for framebuffer color targets
-// and post-processing effects.
-GLuint quadVAO = 0;
-GLuint quadVBO;
-void renderQuad()
-{
-	if (quadVAO == 0) {
-		GLfloat quadVertices[] = {
-			// Positions        // Texture Coords
-			-1.0f,  1.0f, 0.0f,  0.0f, 1.0f,
-			-1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
-			1.0f,  1.0f, 0.0f,  1.0f, 1.0f,
-			1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
-		};
-		// Setup plane VAO
-		glGenVertexArrays(1, &quadVAO);
-		glGenBuffers(1, &quadVBO);
-		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-		glBindVertexArray(quadVAO);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), 0);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT)));
-		glEnableVertexAttribArray(1);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glCheckError();
-	}
-	glBindVertexArray(quadVAO);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glBindVertexArray(0);
 }
 
 // RenderCube() Renders a 1x1 3D cube in NDC.
