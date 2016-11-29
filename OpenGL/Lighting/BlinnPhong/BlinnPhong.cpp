@@ -120,7 +120,7 @@ int main() {
 		glUniform3fv(glGetUniformLocation(shader.program, "lightPos"), 1, &lightPos[0]);
 		glUniform3fv(glGetUniformLocation(shader.program, "viewPos"), 1, &camera.position[0]);
 		glUniform1i(glGetUniformLocation(shader.program, "blinn"), isBlinn);
-glCheckError();
+
 		glBindVertexArray(planeVAO);
 		glBindTexture(GL_TEXTURE_2D, floorTexture);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -143,6 +143,7 @@ glCheckError();
 
 #pragma region "User input"
 // Moves/alters the camera positions based on user input
+bool keysPressed[1024];
 void do_Movement()
 {
 	// Camera controls
@@ -154,6 +155,10 @@ void do_Movement()
 		camera.do_key(CameraMovement::MOVELEFT, deltaTime);
 	if (keys[GLFW_KEY_D])
 		camera.do_key(CameraMovement::MOVERIGHT, deltaTime);
+	if (!keysPressed[GLFW_KEY_B]) {
+		isBlinn = !isBlinn;
+		keysPressed[GLFW_KEY_B] = true;
+	}
 }
 
 // Is called whenever a key is pressed/released via GLFW
@@ -164,8 +169,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if (action == GLFW_PRESS)
 		keys[key] = true;
-	else if (action == GLFW_RELEASE)
+	else if (action == GLFW_RELEASE) {
 		keys[key] = false;
+		keysPressed[key] = false;
+	}
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
